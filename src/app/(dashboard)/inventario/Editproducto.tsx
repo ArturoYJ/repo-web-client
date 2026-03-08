@@ -42,7 +42,7 @@ export default function EditProductoModal({
     e.preventDefault();
     if (!productoId) return;
 
-    const errors = buildFormErrors(formData, false, true); // true for isCreationMode to skip variant validation
+    const errors = buildFormErrors(formData, false, true);
     if (errors.nombre) { setFormErrors(errors); return; }
 
     setSubmitting(true);
@@ -51,7 +51,11 @@ export default function EditProductoModal({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ nombre: formData.nombre.trim(), sku: formData.sku.trim() || undefined }),
+        body: JSON.stringify({
+          nombre: formData.nombre.trim(),
+          sku: formData.sku.trim() || undefined,
+          proveedor: formData.proveedor.trim() || undefined,
+        }),
       });
 
       if (!result.ok) {
@@ -84,7 +88,7 @@ export default function EditProductoModal({
           submitting={submitting}
           submitLabel="Guardar cambios"
           showSucursal={false}
-          isCreationMode={true} // This hides the variant box
+          isCreationMode={true}
           onChange={handleChange}
           onSubmit={handleSubmit}
           onCancel={handleClose}

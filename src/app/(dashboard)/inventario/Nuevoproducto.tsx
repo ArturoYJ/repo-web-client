@@ -11,7 +11,7 @@ export function validateField(
   isCreationMode?: boolean
 ): string | undefined {
   if (name === 'nombre' && !value.trim()) return 'El nombre es obligatorio';
-  
+
   if (isCreationMode) return undefined;
 
   if (name === 'precio_adquisicion') {
@@ -32,11 +32,11 @@ export function buildFormErrors(formData: FormData, includeSucursal = false, isC
   const errors: FormErrors = {};
   const e1 = validateField('nombre', formData.nombre, undefined, isCreationMode);
   if (e1) errors.nombre = e1;
-  
+
   if (!isCreationMode) {
     const e2 = validateField('precio_adquisicion', formData.precio_adquisicion, undefined, isCreationMode);
     const e3 = validateField('precio_venta_etiqueta', formData.precio_venta_etiqueta, formData.precio_adquisicion, isCreationMode);
-    
+
     if (e2) errors.precio_adquisicion = e2;
     if (e3) errors.precio_venta_etiqueta = e3;
     if (includeSucursal) {
@@ -46,8 +46,6 @@ export function buildFormErrors(formData: FormData, includeSucursal = false, isC
   }
   return errors;
 }
-
-
 
 interface NuevoProductoFormProps {
   formData: FormData;
@@ -102,115 +100,128 @@ export default function NuevoProductoForm({
         />
       </div>
 
-      {!isCreationMode && (
-        <>
-          <div className={styles.row}>
-        <div className={styles.field}>
-          <input
-            className={styles.input}
-            type="text"
-            name="modelo"
-            placeholder="Modelo"
-            value={formData.modelo}
-            onChange={onChange}
-          />
-        </div>
-        <div className={styles.field}>
-          <input
-            className={styles.input}
-            type="text"
-            name="color"
-            placeholder="Color"
-            value={formData.color}
-            onChange={onChange}
-          />
-        </div>
-      </div>
-
       <div className={styles.field}>
         <input
           className={styles.input}
           type="text"
-          name="codigo_barras"
-          placeholder="Código de barras (opcional)"
-          value={formData.codigo_barras}
+          name="proveedor"
+          placeholder="Proveedor (opcional)"
+          value={formData.proveedor}
           onChange={onChange}
         />
       </div>
 
-      <div className={styles.row}>
-        <div className={styles.field}>
-          <input
-            className={`${styles.input} ${formErrors.precio_adquisicion ? styles.inputError : ''}`}
-            type="number"
-            name="precio_adquisicion"
-            placeholder="Valor original"
-            min="0"
-            step="0.01"
-            value={formData.precio_adquisicion}
-            onChange={onChange}
-          />
-          {formErrors.precio_adquisicion && <p className={styles.error}>{formErrors.precio_adquisicion}</p>}
-        </div>
-        <div className={styles.field}>
-          <input
-            className={`${styles.input} ${formErrors.precio_venta_etiqueta ? styles.inputError : ''}`}
-            type="number"
-            name="precio_venta_etiqueta"
-            placeholder="Valor venta"
-            min="0"
-            step="0.01"
-            value={formData.precio_venta_etiqueta}
-            onChange={onChange}
-          />
-          {formErrors.precio_venta_etiqueta && <p className={styles.error}>{formErrors.precio_venta_etiqueta}</p>}
-        </div>
-      </div>
-
-      {showSucursal ? (
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <select
-              className={`${styles.input} ${styles.select} ${formErrors.sucursal_id ? styles.inputError : ''}`}
-              name="sucursal_id"
-              value={formData.sucursal_id}
-              onChange={onChange}
-              disabled={loadingSucursales}
-            >
-              <option value="">{loadingSucursales ? 'Cargando...' : 'Sucursal *'}</option>
-              {sucursales.map(s => (
-                <option key={s.id_sucursal} value={s.id_sucursal}>{s.nombre_lugar}</option>
-              ))}
-            </select>
-            {formErrors.sucursal_id && <p className={styles.error}>{formErrors.sucursal_id}</p>}
+      {!isCreationMode && (
+        <>
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <input
+                className={styles.input}
+                type="text"
+                name="modelo"
+                placeholder="Modelo"
+                value={formData.modelo}
+                onChange={onChange}
+              />
+            </div>
+            <div className={styles.field}>
+              <input
+                className={styles.input}
+                type="text"
+                name="color"
+                placeholder="Color"
+                value={formData.color}
+                onChange={onChange}
+              />
+            </div>
           </div>
+
           <div className={styles.field}>
             <input
               className={styles.input}
-              type="number"
-              name="stock_inicial"
-              placeholder="Stock inicial"
-              min="0"
-              step="1"
-              value={formData.stock_inicial}
+              type="text"
+              name="codigo_barras"
+              placeholder="Código de barras (opcional)"
+              value={formData.codigo_barras}
               onChange={onChange}
             />
           </div>
-        </div>
-      ) : (
-        <div className={styles.field}>
-          <input
-            className={styles.input}
-            type="number"
-            name="stock_inicial"
-            placeholder="Stock actual"
-            min="0"
-            step="1"
-            value={formData.stock_inicial}
-            onChange={onChange}
-          />
-        </div>
-      )}
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <input
+                className={`${styles.input} ${formErrors.precio_adquisicion ? styles.inputError : ''}`}
+                type="number"
+                name="precio_adquisicion"
+                placeholder="Valor original"
+                min="0"
+                step="0.01"
+                value={formData.precio_adquisicion}
+                onChange={onChange}
+              />
+              {formErrors.precio_adquisicion && <p className={styles.error}>{formErrors.precio_adquisicion}</p>}
+            </div>
+            <div className={styles.field}>
+              <input
+                className={`${styles.input} ${formErrors.precio_venta_etiqueta ? styles.inputError : ''}`}
+                type="number"
+                name="precio_venta_etiqueta"
+                placeholder="Valor venta"
+                min="0"
+                step="0.01"
+                value={formData.precio_venta_etiqueta}
+                onChange={onChange}
+              />
+              {formErrors.precio_venta_etiqueta && <p className={styles.error}>{formErrors.precio_venta_etiqueta}</p>}
+            </div>
+          </div>
+
+          {showSucursal ? (
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <select
+                  className={`${styles.input} ${styles.select} ${formErrors.sucursal_id ? styles.inputError : ''}`}
+                  name="sucursal_id"
+                  value={formData.sucursal_id}
+                  onChange={onChange}
+                  disabled={loadingSucursales}
+                  aria-label="Sucursal"
+                  title="Sucursal"
+                >
+                  <option value="">{loadingSucursales ? 'Cargando...' : 'Sucursal *'}</option>
+                  {sucursales.map(s => (
+                    <option key={s.id_sucursal} value={s.id_sucursal}>{s.nombre_lugar}</option>
+                  ))}
+                </select>
+                {formErrors.sucursal_id && <p className={styles.error}>{formErrors.sucursal_id}</p>}
+              </div>
+              <div className={styles.field}>
+                <input
+                  className={styles.input}
+                  type="number"
+                  name="stock_inicial"
+                  placeholder="Stock inicial"
+                  min="0"
+                  step="1"
+                  value={formData.stock_inicial}
+                  onChange={onChange}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.field}>
+              <input
+                className={styles.input}
+                type="number"
+                name="stock_inicial"
+                placeholder="Stock actual"
+                min="0"
+                step="1"
+                value={formData.stock_inicial}
+                onChange={onChange}
+              />
+            </div>
+          )}
         </>
       )}
 

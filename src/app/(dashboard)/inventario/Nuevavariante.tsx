@@ -1,6 +1,123 @@
 import Button from '@/components/ui/Button';
 import styles from './form.module.css';
-import { FormEvent, ChangeEvent } from 'react';
+import { FormEvent, ChangeEvent, useState, useRef, useEffect } from 'react';
+
+const COLORES_PREDEFINIDOS = [
+  'Amarillo', 'Azul', 'Azul marino', 'Beige', 'Blanco', 'Café', 'Champagne',
+  'Coral', 'Crema', 'Dorado', 'Fucsia', 'Gris', 'Gris oscuro', 'Lavanda',
+  'Lila', 'Magenta', 'Menta', 'Morado', 'Naranja', 'Negro', 'Nude', 'Plateado',
+  'Rojo', 'Rosa', 'Rosa pastel', 'Salmón', 'Terracota', 'Turquesa', 'Verde',
+  'Verde olivo', 'Vino',
+];
+
+interface ColorPickerProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function ColorPicker({ value, onChange }: ColorPickerProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtrados = COLORES_PREDEFINIDOS.filter(c =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSelect = (color: string) => {
+    onChange(color);
+    setOpen(false);
+    setSearch('');
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+    setSearch(e.target.value);
+    setOpen(true);
+  };
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Color"
+          value={value}
+          onChange={handleInputChange}
+          onFocus={() => setOpen(true)}
+          autoComplete="off"
+        />
+        <button
+          type="button"
+          className={styles.input}
+          style={{ width: '40px', flexShrink: 0, cursor: 'pointer', textAlign: 'center', padding: '0' }}
+          onClick={() => { setOpen(o => !o); setSearch(''); }}
+        >
+          ▾
+        </button>
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute',
+          zIndex: 100,
+          top: '100%',
+          left: 0,
+          right: 0,
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          maxHeight: '200px',
+          overflowY: 'auto',
+          marginTop: '2px',
+        }}>
+          <div style={{ padding: '6px' }}>
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="Buscar color..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              autoFocus
+              style={{ marginBottom: '4px' }}
+            />
+          </div>
+          {filtrados.length === 0 ? (
+            <p style={{ padding: '8px 12px', color: '#6b7280', fontSize: '13px' }}>Sin coincidencias</p>
+          ) : (
+            filtrados.map(color => (
+              <div
+                key={color}
+                onClick={() => handleSelect(color)}
+                style={{
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  background: value === color ? '#fdf2f8' : 'transparent',
+                  color: value === color ? '#9d174d' : '#111827',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#fdf2f8')}
+                onMouseLeave={e => (e.currentTarget.style.background = value === color ? '#fdf2f8' : 'transparent')}
+              >
+                {color}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export interface VarianteFormData {
   modelo: string;
@@ -35,7 +152,6 @@ export function buildVarianteFormErrors(formData: VarianteFormData): VarianteFor
   const e1 = validateVarianteField('precio_adquisicion', formData.precio_adquisicion);
   const e2 = validateVarianteField('precio_venta_etiqueta', formData.precio_venta_etiqueta, formData.precio_adquisicion);
   const e3 = validateVarianteField('sucursal_id', formData.sucursal_id);
-  
   if (e1) errors.precio_adquisicion = e1;
   if (e2) errors.precio_venta_etiqueta = e2;
   if (e3) errors.sucursal_id = e3;
@@ -63,9 +179,13 @@ export default function NuevaVarianteForm({
   onSubmit,
   onCancel,
 }: NuevaVarianteFormProps) {
+  const handleColorChange = (value: string) => {
+    onChange({ target: { name: 'color', value } } as ChangeEvent<HTMLInputElement>);
+  };
+
   return (
     <form onSubmit={onSubmit} className={styles.form}>
-      
+
       <div className={styles.row}>
         <div className={styles.field}>
           <input
@@ -78,14 +198,7 @@ export default function NuevaVarianteForm({
           />
         </div>
         <div className={styles.field}>
-          <input
-            className={styles.input}
-            type="text"
-            name="color"
-            placeholder="Color"
-            value={formData.color}
-            onChange={onChange}
-          />
+          <ColorPicker value={formData.color} onChange={handleColorChange} />
         </div>
       </div>
 
@@ -137,6 +250,7 @@ export default function NuevaVarianteForm({
             value={formData.sucursal_id}
             onChange={onChange}
             disabled={loadingSucursales}
+            title="Sucursal"
           >
             <option value="">{loadingSucursales ? 'Cargando...' : 'Sucursal *'}</option>
             {sucursales.map(s => (

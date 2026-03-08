@@ -22,12 +22,13 @@ import formStyles from './form.module.css';
 
 export interface Sucursal { id_sucursal: number; nombre_lugar: string; ubicacion: string; }
 
-type SortField = 'sku' | 'nombre' | 'totalStock' | 'valorOriginal' | 'valorVenta' | 'sucursal';
+type SortField = 'sku' | 'nombre' | 'proveedor' | 'totalStock' | 'valorOriginal' | 'valorVenta' | 'sucursal';
 type SortOrder = 'asc' | 'desc';
 
 const FORM_INITIAL: FormData = {
   nombre: "",
   sku: "",
+  proveedor: "",
   modelo: "",
   color: "",
   codigo_barras: "",
@@ -44,7 +45,7 @@ export default function InventarioPage() {
   const [filtered, setFiltered] = useState<ProductoFila[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const [sortField, setSortField] = useState<SortField>('nombre');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [page, setPage] = useState(1);
@@ -60,19 +61,17 @@ export default function InventarioPage() {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [stockMin, setStockMin] = useState('');
   const [stockMax, setStockMax] = useState('');
+  const [proveedorFilter, setProveedorFilter] = useState('');
 
-  // New variant modal state
   const [showAddVarianteModal, setShowAddVarianteModal] = useState(false);
   const [addVarianteProductId, setAddVarianteProductId] = useState<number | null>(null);
   const [addVarianteProductoNombre, setAddVarianteProductoNombre] = useState('');
 
-  // Edit variant global state
   const [showSelectVarianteModal, setShowSelectVarianteModal] = useState(false);
   const [selectVarianteProductId, setSelectVarianteProductId] = useState<number | null>(null);
   const [showEditVarianteModal, setShowEditVarianteModal] = useState(false);
   const [editVarianteId, setEditVarianteId] = useState<number | null>(null);
 
-  // Crear producto maestro
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<FormData>(FORM_INITIAL);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -117,6 +116,7 @@ export default function InventarioPage() {
         id: p.id_producto_maestro,
         sku: p.sku,
         nombre: p.nombre,
+        proveedor: p.proveedor ?? null,
         totalStock: p.variantes.reduce((acc, v) => acc + (stockMap.get(v.id_variante) ?? 0), 0),
         valorOriginal: p.variantes.reduce((acc, v) => acc + Number(v.precio_adquisicion), 0),
         valorVenta: p.variantes.reduce((acc, v) => acc + Number(v.precio_venta_etiqueta), 0),
@@ -148,6 +148,10 @@ export default function InventarioPage() {
 
     if (stockMin) result = result.filter(p => p.totalStock >= Number(stockMin));
     if (stockMax) result = result.filter(p => p.totalStock <= Number(stockMax));
+    if (proveedorFilter.trim()) {
+      const lower = proveedorFilter.trim().toLowerCase();
+      result = result.filter(p => p.proveedor?.toLowerCase().includes(lower));
+    }
 
     result.sort((a, b) => {
       let valA: string | number = '';
@@ -156,6 +160,7 @@ export default function InventarioPage() {
       switch (sortField) {
         case 'sku': valA = a.sku || ''; valB = b.sku || ''; break;
         case 'nombre': valA = a.nombre || ''; valB = b.nombre || ''; break;
+        case 'proveedor': valA = a.proveedor || ''; valB = b.proveedor || ''; break;
         case 'totalStock': valA = a.totalStock; valB = b.totalStock; break;
         case 'valorOriginal': valA = a.valorOriginal; valB = b.valorOriginal; break;
         case 'valorVenta': valA = a.valorVenta; valB = b.valorVenta; break;
@@ -167,7 +172,7 @@ export default function InventarioPage() {
       return 0;
     });
     return result;
-  }, [filtered, sortField, sortOrder, stockMin, stockMax]);
+  }, [filtered, sortField, sortOrder, stockMin, stockMax, proveedorFilter]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -196,15 +201,15 @@ export default function InventarioPage() {
       const res = await fetch(`/api/v1/productos/${deleteId}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || 'Error al eliminar el producto');
+        showToast(d.error ?? 'Error al eliminar', 'error');
+        return;
       }
       showToast('Producto eliminado correctamente', 'success');
-      fetchProductos();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Error al eliminar el producto', 'error');
-    } finally {
       setDeleteId(null);
       setDeleteNombre('');
+      fetchProductos();
+    } catch {
+      showToast('Error al eliminar el producto', 'error');
     }
   };
 
@@ -215,10 +220,9 @@ export default function InventarioPage() {
   };
 
   const handleCloseModal = () => {
-    if (!submitting) {
-      setShowModal(false);
-      setFormErrors({});
-    }
+    setShowModal(false);
+    setFormData(FORM_INITIAL);
+    setFormErrors({});
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -232,12 +236,16 @@ export default function InventarioPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errors = buildFormErrors(formData, true, true);
+    const errors = buildFormErrors(formData, false, true);
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
 
     setSubmitting(true);
     try {
-      const body = { nombre: formData.nombre.trim(), sku: formData.sku.trim() || undefined };
+      const body = {
+        nombre: formData.nombre.trim(),
+        sku: formData.sku.trim() || undefined,
+        proveedor: formData.proveedor.trim() || undefined,
+      };
       const res = await fetch(`/api/v1/productos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -262,6 +270,7 @@ export default function InventarioPage() {
   const headers: Column<ProductoFila>[] = [
     { header: 'SKU', key: 'sku', sortable: true },
     { header: 'Productos', key: 'nombre', sortable: true },
+    { header: 'Proveedor', key: 'proveedor', sortable: true, render: (row) => row.proveedor || '—' },
     { header: 'Total Stock', key: 'totalStock', sortable: true },
     { header: 'Valor original', key: 'valorOriginal', sortable: true, render: (row) => `$${row.valorOriginal.toLocaleString()}` },
     { header: 'Valor venta', key: 'valorVenta', sortable: true, render: (row) => `$${row.valorVenta.toLocaleString()}` },
@@ -313,6 +322,16 @@ export default function InventarioPage() {
 
         <div className={styles.filterDivider} />
 
+        <input
+          className={styles.filterInput}
+          type="text"
+          placeholder="Proveedor"
+          value={proveedorFilter}
+          onChange={e => { setProveedorFilter(e.target.value); setPage(1); }}
+        />
+
+        <div className={styles.filterDivider} />
+
         <span className={styles.filterLabel}>Stock:</span>
         <input
           className={styles.filterInput}
@@ -325,8 +344,8 @@ export default function InventarioPage() {
           value={stockMax} onChange={e => { setStockMax(e.target.value); setPage(1); }}
         />
 
-        {(stockMin || stockMax) && (
-          <button className={styles.filterClear} onClick={() => { setStockMin(''); setStockMax(''); }}>
+        {(stockMin || stockMax || proveedorFilter) && (
+          <button className={styles.filterClear} onClick={() => { setStockMin(''); setStockMax(''); setProveedorFilter(''); }}>
             Limpiar
           </button>
         )}
@@ -345,9 +364,9 @@ export default function InventarioPage() {
       ) : error ? (
         <p className={styles.errorText}>{error}</p>
       ) : (
-        <Table 
-          headers={headers} 
-          data={paginated} 
+        <Table
+          headers={headers}
+          data={paginated}
           emptyMessage="No se encontraron productos"
           onSort={handleSort}
           sortField={sortField}
@@ -403,7 +422,7 @@ export default function InventarioPage() {
         productoId={infoId}
         onClose={() => { setShowInfoModal(false); setInfoId(null); }}
       />
-      
+
       <AddVarianteModal
         open={showAddVarianteModal}
         productoId={addVarianteProductId}
@@ -413,7 +432,7 @@ export default function InventarioPage() {
         onSuccess={fetchProductos}
         showToast={showToast}
       />
-      
+
       <Dialog open={showModal} onClose={handleCloseModal} title="Nuevo producto">
         <NuevoProductoForm
           formData={formData}

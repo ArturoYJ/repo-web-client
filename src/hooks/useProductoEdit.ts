@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { ProductoFormData } from '@/types/inventario-view.types';
 
 const FORM_EMPTY: ProductoFormData = {
-  nombre: '', sku: '', modelo: '', color: '', codigo_barras: '',
+  nombre: '', sku: '', proveedor: '', modelo: '', color: '', codigo_barras: '',
   precio_adquisicion: '', precio_venta_etiqueta: '', sucursal_id: '', stock_inicial: '',
 };
 
@@ -53,6 +53,7 @@ export function useProductoEdit(
       setFormData({
         nombre: producto.nombre,
         sku: producto.sku,
+        proveedor: producto.proveedor ?? '',
         modelo: variante?.modelo ?? '',
         color: variante?.color ?? '',
         codigo_barras: variante?.codigo_barras ?? '',
