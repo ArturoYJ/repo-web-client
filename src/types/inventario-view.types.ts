@@ -49,6 +49,7 @@ export interface InventarioInfo {
 export interface ProductoFormData {
   nombre: string;
   sku: string;
+  proveedor: string;
   modelo: string;
   color: string;
   codigo_barras: string;

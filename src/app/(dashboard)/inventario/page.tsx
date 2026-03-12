@@ -28,6 +28,7 @@ type SortOrder = 'asc' | 'desc';
 const FORM_INITIAL: FormData = {
   nombre: "",
   sku: "",
+  proveedor: "",
   modelo: "",
   color: "",
   codigo_barras: "",
