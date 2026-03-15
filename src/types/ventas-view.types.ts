@@ -28,6 +28,7 @@ export interface InventarioItem {
   nombre_producto: string;
   stock_actual: number;
   precio_venta: number;
+  precio_adquisicion: number;
   modelo: string | null;
   color: string | null;
 }
@@ -57,16 +58,4 @@ export interface VentaFormProps {
 export interface MotivoTransaccion {
   id_motivo: number;
   descripcion: string;
-}
-
-export interface InventarioItem {
-  id_inventario: number;
-  id_variante: number;
-  sku_producto: string;
-  nombre_producto: string;
-  stock_actual: number;
-  precio_venta: number;
-  precio_adquisicion: number;
-  modelo: string | null;
-  color: string | null;
 }
