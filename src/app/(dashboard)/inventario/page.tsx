@@ -50,7 +50,7 @@ export default function InventarioPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [page, setPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; openUp: boolean } | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteNombre, setDeleteNombre] = useState('');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -294,7 +294,9 @@ export default function InventarioPage() {
             onClick={(e) => {
               e.stopPropagation();
               const rect = e.currentTarget.getBoundingClientRect();
-              setMenuPos({ top: rect.bottom + 4, left: rect.right - 120 });
+              const MENU_HEIGHT = 180;
+              const openUp = rect.bottom + MENU_HEIGHT > window.innerHeight;
+              setMenuPos({ top: openUp ? rect.top - MENU_HEIGHT : rect.bottom + 4, left: rect.right - 140, openUp });
               setOpenMenuId(openMenuId === row.id ? null : row.id);
             }}
           >•••</button>
