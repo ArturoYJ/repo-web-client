@@ -4,10 +4,11 @@ import { FormEvent, ChangeEvent, useState, useRef, useEffect } from 'react';
 
 const COLORES_PREDEFINIDOS = [
   'Amarillo', 'Azul', 'Azul marino', 'Beige', 'Blanco', 'Café', 'Champagne',
-  'Coral', 'Crema', 'Dorado', 'Fucsia', 'Gris', 'Gris oscuro', 'Lavanda',
-  'Lila', 'Magenta', 'Menta', 'Morado', 'Naranja', 'Negro', 'Nude', 'Plateado',
-  'Rojo', 'Rosa', 'Rosa pastel', 'Salmón', 'Terracota', 'Turquesa', 'Verde',
-  'Verde olivo', 'Vino',
+  'Coral', 'Crema', 'Dorado', 'Estampado', 'Estampado floral', 'Estampado geométrico',
+  'Fucsia', 'Gris', 'Gris oscuro', 'Lavanda', 'Lila', 'Magenta', 'Menta',
+  'Morado', 'Naranja', 'Negro', 'Nude', 'Plateado', 'Rojo', 'Rosa', 'Rosa pastel',
+  'Salmón', 'Terracota', 'Turquesa', 'Verde', 'Verde olivo', 'Vino',
+  'Con textura', 'Brillante', 'Mate', 'Metálico', 'Transparente', 'Bicolor',
 ];
 
 interface ColorPickerProps {
@@ -50,7 +51,7 @@ function ColorPicker({ value, onChange }: ColorPickerProps) {
         <input
           className={styles.input}
           type="text"
-          placeholder="Color"
+          placeholder="Color / acabado"
           value={value}
           onChange={handleInputChange}
           onFocus={() => setOpen(true)}
@@ -58,6 +59,7 @@ function ColorPicker({ value, onChange }: ColorPickerProps) {
         />
         <button
           type="button"
+          aria-label="Abrir selector de color"
           className={styles.input}
           style={{ width: '40px', flexShrink: 0, cursor: 'pointer', textAlign: 'center', padding: '0' }}
           onClick={() => { setOpen(o => !o); setSearch(''); }}
@@ -127,6 +129,7 @@ export interface VarianteFormData {
   precio_venta_etiqueta: string;
   sucursal_id: string;
   stock_inicial: string;
+  fecha_compra: string;
 }
 
 export interface VarianteFormErrors {
@@ -192,7 +195,7 @@ export default function NuevaVarianteForm({
             className={styles.input}
             type="text"
             name="modelo"
-            placeholder="Modelo"
+            placeholder="Descripción"
             value={formData.modelo}
             onChange={onChange}
           />
@@ -271,6 +274,19 @@ export default function NuevaVarianteForm({
             onChange={onChange}
           />
         </div>
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="fecha_compra" className={styles.label}>Fecha de compra</label>
+        <input
+          id="fecha_compra"
+          aria-label="Fecha de compra"
+          className={styles.input}
+          type="date"
+          name="fecha_compra"
+          value={formData.fecha_compra}
+          onChange={onChange}
+        />
       </div>
 
       <div className={styles.actions}>

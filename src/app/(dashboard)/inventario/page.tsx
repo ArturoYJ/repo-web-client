@@ -267,7 +267,7 @@ export default function InventarioPage() {
   const paginated = sortedProductos.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   const headers: Column<ProductoFila>[] = [
-    { header: 'SKU', key: 'sku', sortable: true },
+    { header: 'Código', key: 'sku', sortable: true },
     { header: 'Productos', key: 'nombre', sortable: true },
     {
       header: 'Total Stock',

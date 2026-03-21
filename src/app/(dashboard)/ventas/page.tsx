@@ -72,7 +72,7 @@ export default function VentasPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Fecha', 'Producto', 'SKU', 'Sucursal', 'Cantidad', 'Precio venta', 'Utilidad', 'Motivo', 'Usuario'];
+    const headers = ['Fecha', 'Producto', 'Código', 'Sucursal', 'Cantidad', 'Precio venta', 'Utilidad Unitaria', 'Motivo', 'Usuario'];
     const rows = ventas.map(v => [
       new Date(v.fecha_hora).toLocaleString('es-MX'),
       v.nombre_producto + (v.modelo ? ` (${v.modelo})` : '') + (v.color ? ` ${v.color}` : ''),
@@ -119,6 +119,7 @@ export default function VentasPage() {
 
       <form onSubmit={handleApplyFilters} className={styles.filterBar}>
         <select
+          aria-label="Filtrar por sucursal"
           className={styles.filterSelect}
           value={filterSucursal}
           onChange={e => setFilterSucursal(e.target.value)}
@@ -131,6 +132,7 @@ export default function VentasPage() {
 
         <div className={styles.filterDateGroup}>
           <input
+            aria-label="Fecha inicio"
             className={styles.filterInput}
             type="date"
             value={filterFechaInicio}
@@ -138,6 +140,7 @@ export default function VentasPage() {
           />
           <span className={styles.filterDateSep}>—</span>
           <input
+            aria-label="Fecha fin"
             className={styles.filterInput}
             type="date"
             value={filterFechaFin}
@@ -193,7 +196,7 @@ export default function VentasPage() {
                   <th className={styles.th}>Sucursal</th>
                   <th className={styles.th}>Cant.</th>
                   <th className={styles.th}>Precio venta</th>
-                  <th className={styles.th}>Utilidad</th>
+                  <th className={styles.th}>Utilidad Unitaria</th>
                   <th className={styles.th}>Motivo</th>
                   <th className={styles.th}>Usuario</th>
                 </tr>

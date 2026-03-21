@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import Dialog from '@/components/ui/Dialog';
-import NuevaVarianteForm, { 
-  VarianteFormData, 
-  VarianteFormErrors, 
-  validateVarianteField, 
-  buildVarianteFormErrors 
+import NuevaVarianteForm, {
+  VarianteFormData,
+  VarianteFormErrors,
+  validateVarianteField,
+  buildVarianteFormErrors
 } from './Nuevavariante';
 import type { SucursalForm } from '@/types/inventario-view.types';
 
@@ -22,8 +22,8 @@ interface AddVarianteModalProps {
 
 const FORM_INITIAL: VarianteFormData = {
   modelo: '', color: '', codigo_barras: '',
-  precio_adquisicion: '', precio_venta_etiqueta: '', 
-  sucursal_id: '', stock_inicial: ''
+  precio_adquisicion: '', precio_venta_etiqueta: '',
+  sucursal_id: '', stock_inicial: '', fecha_compra: '',
 };
 
 export default function AddVarianteModal({
@@ -83,6 +83,7 @@ export default function AddVarianteModal({
         precio_venta_etiqueta: Number(formData.precio_venta_etiqueta),
         sucursal_id: Number(formData.sucursal_id),
         stock_inicial: Number(formData.stock_inicial) || 0,
+        ...(formData.fecha_compra && { fecha_compra: formData.fecha_compra }),
       };
 
       const res = await fetch(`/api/v1/variantes`, {
@@ -91,10 +92,10 @@ export default function AddVarianteModal({
         credentials: 'include',
         body: JSON.stringify(payload),
       });
-      
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al agregar variante');
-      
+
       showToast('Variante agregada correctamente', 'success');
       setFormData(FORM_INITIAL);
       setFormErrors({});
@@ -109,11 +110,11 @@ export default function AddVarianteModal({
 
   return (
     <Dialog open={open} onClose={handleClose} title={`Agregar variante: ${productoNombre}`}>
-      <NuevaVarianteForm 
+      <NuevaVarianteForm
         formData={formData}
         formErrors={formErrors}
         sucursales={sucursales}
-        loadingSucursales={false} // Se cargan en page.tsx
+        loadingSucursales={false}
         submitting={submitting}
         onChange={handleChange}
         onSubmit={handleSubmit}

@@ -178,6 +178,7 @@ export default function DashboardPage() {
           <div className={styles.filterBar} style={{ marginTop: '2rem' }}>
             <h2 className={styles.sectionTitle} style={{ margin: 0, marginRight: '1rem', fontSize: '1.2rem' }}>Rendimiento</h2>
             <select
+              aria-label="Periodo de rendimiento"
               className={styles.filterSelect}
               value={periodo}
               onChange={(e) => {
@@ -221,6 +222,7 @@ export default function DashboardPage() {
           <SearchInput placeholder="Buscar productos..." onSearch={handleSearch} />
         </div>
         <select
+          aria-label="Filtrar por estado de stock"
           className={styles.filterSelect}
           value={stockFilter}
           onChange={(e) => setStockFilter(e.target.value)}
@@ -230,6 +232,7 @@ export default function DashboardPage() {
           <option value="agotados">Agotados Globalmente</option>
         </select>
         <select
+          aria-label="Filtrar por variantes"
           className={styles.filterSelect}
           value={variantFilter}
           onChange={(e) => setVariantFilter(e.target.value)}
