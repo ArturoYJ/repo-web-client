@@ -1,0 +1,172 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  padding: 2rem 1rem;
+}
+
+.logo {
+  font-size: 4rem;
+  font-family: 'cinzel';
+  font-weight: semi-bold;
+  color: #000000;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+  width: 100%;
+  padding: 3rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #850E35;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.fieldWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #850E35;
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #850E35;
+  border-radius: 0.375rem;
+  padding: 0.65rem 2.5rem 0.65rem 0.75rem;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  border-color: #850E35;
+  box-shadow: 0 0 0 3px rgba(133, 14, 53, 0.12);
+}
+
+.input.hasError {
+  border-color: #dc2626;
+}
+
+.icon {
+  position: absolute;
+  right: 0.75rem;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.toggleButton {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.toggleButton:hover {
+  color: #850E35;
+}
+
+.errorText {
+  font-size: 0.78rem;
+  color: #dc2626;
+  margin-top: 0.15rem;
+}
+
+.submitButton {
+  width: 100%;
+  background-color: #850E35;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #6d0b2b;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login {
+  color: #605E5F;
+  margin: 1.5rem auto 0;
+  text-align: center;
+  display: block;
+  width: fit-content;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.loginLink {
+  color: #850E35;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 2rem 1.5rem;
+  }
+}
