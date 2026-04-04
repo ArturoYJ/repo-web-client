@@ -161,6 +161,39 @@
   text-decoration: underline;
 }
 
+.term {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f4f6;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+ 
+.termIcon {
+  font-size: 0.95rem;
+  color: #9ca3af;
+}
+ 
+.termLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: #850E35;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+ 
+.termLink:hover {
+  color: #6d0b2b;
+}
+ 
+
 @media (max-width: 600px) {
   .grid {
     grid-template-columns: 1fr;

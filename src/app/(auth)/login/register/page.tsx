@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User, Mail, Eye, EyeOff } from 'lucide-react';
 import FormField from '@/components/forms/FormField';
 import ErrorMessage from '@/components/forms/ErrorMessage';
+import TerminosModal from '@/components/ui/TerminosModal';
 import styles from './page.module.css';
 
 export default function RegisterPage() {
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showTerminos, setShowTerminos] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -27,7 +29,7 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
     if (!formData.email) newErrors.email = 'El correo es obligatorio';
-    if (!formData.password || formData.password.length < 6) newErrors.password = 'Mínimo 6 caracteres';
+    if (!formData.password || formData.password.length < 8) newErrors.password = 'Mínimo 8 caracteres';
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Confirma tu contraseña';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Las contraseñas no coinciden';
     setErrors(newErrors);
@@ -97,7 +99,8 @@ export default function RegisterPage() {
               icon={
                 <button type="button" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button> }
+                </button>
+              }
             />
 
             <FormField
@@ -112,7 +115,9 @@ export default function RegisterPage() {
                   {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               }
-            /> </div>
+            />
+
+          </div>
 
           <button type="submit" disabled={isLoading} className={styles.submitButton}>
             {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
@@ -122,7 +127,15 @@ export default function RegisterPage() {
             ¿Tienes cuenta? <span className={styles.loginLink}>Inicia sesión</span>
           </a>
         </form>
+
+        <div className={styles.term}>
+          <span className={styles.termIcon}>ⓘ</span>
+          <button type="button" className={styles.termLink} onClick={() => setShowTerminos(true)}>
+            Ver Términos y Condiciones
+          </button>
+        </div>
       </div>
+      {showTerminos && <TerminosModal onClose={() => setShowTerminos(false)} />}
     </div>
   );
 }
