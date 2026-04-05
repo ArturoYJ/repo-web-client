@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import FormField from '@/components/forms/FormField';
 import { User, Mail, Eye, EyeOff } from 'lucide-react';
 import ErrorMessage from '@/components/forms/ErrorMessage';
@@ -119,9 +120,9 @@ export default function LoginPage() {
               {isLoading ? 'Ingresando...' : 'Ingresar'}
             </button>
 
-            <a href="/login/register" className={styles.new}>
-            ¿No tienes cuenta? <span className={styles.newregister}>Regístrate</span>
-          </a>
+            <Link href="/login/register" className={styles.new}>
+              ¿No tienes cuenta? <span className={styles.newregister}>Regístrate</span>
+            </Link>
           </form>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { User, Mail, Eye, EyeOff } from 'lucide-react';
 import FormField from '@/components/forms/FormField';
 import ErrorMessage from '@/components/forms/ErrorMessage';
@@ -29,6 +30,7 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
     if (!formData.email) newErrors.email = 'El correo es obligatorio';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Formato de correo inválido';
     if (!formData.password || formData.password.length < 8) newErrors.password = 'Mínimo 8 caracteres';
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Confirma tu contraseña';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Las contraseñas no coinciden';
@@ -123,9 +125,9 @@ export default function RegisterPage() {
             {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>
 
-          <a href="/login" className={styles.login}>
+          <Link href="/login" className={styles.login}>
             ¿Tienes cuenta? <span className={styles.loginLink}>Inicia sesión</span>
-          </a>
+          </Link>
         </form>
 
         <div className={styles.term}>
