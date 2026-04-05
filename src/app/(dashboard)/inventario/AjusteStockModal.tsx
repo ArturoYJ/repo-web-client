@@ -70,7 +70,7 @@ export default function AjusteStockModal({ open, varianteId, sucursalId, onClose
         return;
       }
 
-      showToast('Estock ajustado correctamente', 'success');
+      showToast('Stock ajustado correctamente', 'success');
       onSuccess();
       onClose();
     } catch (err) {

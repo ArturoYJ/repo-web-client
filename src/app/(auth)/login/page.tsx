@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import FormField from '@/components/forms/FormField';
 import { User, Mail, Eye, EyeOff } from 'lucide-react';
@@ -20,6 +20,8 @@ interface LoginFormErrors {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const justRegistered = searchParams.get('registered') === 'true';
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -92,6 +94,9 @@ export default function LoginPage() {
           <h1 className={styles.title}>¡Bienvenido!</h1>
           <p className={styles.subtitle}>Ingresa tus datos para continuar</p>
 
+          {justRegistered && (
+            <p className={styles.successMessage}>Cuenta creada con éxito. Inicia sesión para continuar.</p>
+          )}
           {generalError && <ErrorMessage message={generalError} />}
 
           <form onSubmit={handleSubmit}>

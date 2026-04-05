@@ -94,7 +94,7 @@ export default function VentasPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Fecha', 'Producto', 'Código', 'Sucursal', 'Cantidad', 'Precio venta', 'Utilidad Unitaria', 'Motivo', 'Usuario'];
+    const headers = ['Fecha', 'Producto', 'Código', 'Sucursal', 'Cantidad', 'Precio unit.', 'Total', 'Utilidad Unitaria', 'Motivo', 'Usuario'];
     const rows = ventas.map(v => [
       new Date(v.fecha_hora).toLocaleString('es-MX'),
       v.nombre_producto + (v.modelo ? ` (${v.modelo})` : '') + (v.color ? ` ${v.color}` : ''),
@@ -102,6 +102,7 @@ export default function VentasPage() {
       v.nombre_sucursal,
       v.cantidad,
       v.precio_venta_final,
+      (Number(v.precio_venta_final) * v.cantidad).toFixed(2),
       v.utilidad,
       v.motivo,
       v.nombre_usuario,
@@ -217,7 +218,8 @@ export default function VentasPage() {
                   <th className={styles.th}>Producto</th>
                   <th className={styles.th}>Sucursal</th>
                   <th className={styles.th}>Cant.</th>
-                  <th className={styles.th}>Precio venta</th>
+                  <th className={styles.th}>Precio unit.</th>
+                  <th className={styles.th}>Total</th>
                   <th className={styles.th}>Utilidad Unitaria</th>
                   <th className={styles.th}>Motivo</th>
                   <th className={styles.th}>Usuario</th>
@@ -243,6 +245,7 @@ export default function VentasPage() {
                     </td>
                     <td className={styles.td}>{v.nombre_sucursal}</td>
                     <td className={styles.td}><span className={styles.badge}>{v.cantidad}</span></td>
+                    <td className={styles.td}>${Number(v.precio_venta_final).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
                     <td className={styles.td}>${(Number(v.precio_venta_final) * v.cantidad).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
                     <td className={`${styles.td} ${Number(v.utilidad) >= 0 ? styles.utilidadPos : styles.utilidadNeg}`}>
                       ${Number(v.utilidad).toLocaleString('es-MX', { minimumFractionDigits: 2 })}

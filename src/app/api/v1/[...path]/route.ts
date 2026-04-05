@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_URL = process.env.API_URL || 'http://localhost:4000';
 
+const ALLOWED_SEGMENT = /^[\w\-]+$/;
+
 async function handler(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
+
+  if (!path.every((segment) => ALLOWED_SEGMENT.test(segment))) {
+    return new NextResponse(JSON.stringify({ error: 'Invalid path' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const targetUrl = `${API_URL}/api/v1/${path.join('/')}${req.nextUrl.search}`;
 
   const headers = new Headers();

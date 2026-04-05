@@ -51,7 +51,7 @@ export default function RegisterPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Error al crear la cuenta');
-      router.push('/dashboard');
+      router.push('/login?registered=true');
     } catch (error) {
       setGeneralError(error instanceof Error ? error.message : 'Ocurrió un error al registrarse');
     } finally {

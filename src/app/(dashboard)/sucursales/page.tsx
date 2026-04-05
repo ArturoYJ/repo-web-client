@@ -40,10 +40,10 @@ export default function SucursalesPage() {
   const [ajusteVarianteId, setAjusteVarianteId] = useState<number | null>(null);
   const [ajusteSucursalId, setAjusteSucursalId] = useState<number | null>(null);
 
-  const showToast = (msg: string, type: 'success' | 'error') => {
+  const showToast = useCallback((msg: string, type: 'success' | 'error') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
-  };
+  }, []);
 
   const fetchInventarioSucursal = useCallback(async (id_sucursal: number): Promise<InventarioItem[]> => {
     try {

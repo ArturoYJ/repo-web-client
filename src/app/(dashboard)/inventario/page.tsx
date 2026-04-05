@@ -82,10 +82,10 @@ export default function InventarioPage() {
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, []);
 
-  const showToast = (msg: string, type: 'success' | 'error') => {
+  const showToast = useCallback((msg: string, type: 'success' | 'error') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
-  };
+  }, []);
 
   const fetchProductos = useCallback(async () => {
     setLoading(true);
