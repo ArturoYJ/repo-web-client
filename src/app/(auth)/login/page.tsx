@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import FormField from '@/components/forms/FormField';
-import { User, Mail, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import ErrorMessage from '@/components/forms/ErrorMessage';
 import styles from './page.module.css';
 
@@ -18,14 +18,11 @@ interface LoginFormErrors {
   password?: string;
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const justRegistered = searchParams.get('registered') === 'true';
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [generalError, setGeneralError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +50,8 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     setIsLoading(true);
     setGeneralError('');
-
     try {
       const response = await fetch(`/api/v1/auth/login`, {
         method: 'POST',
@@ -64,18 +59,11 @@ export default function LoginPage() {
         credentials: 'include',
         body: JSON.stringify(formData),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Error al iniciar sesión');
       router.push('/dashboard');
     } catch (error) {
-      setGeneralError(
-        error instanceof Error ? error.message : 'Credenciales inválidas'
-      );
+      setGeneralError(error instanceof Error ? error.message : 'Credenciales inválidas');
     } finally {
       setIsLoading(false);
     }
@@ -84,30 +72,19 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.logo}>GLAMSTOCK</h1>
-
       <div className={styles.card}>
         <div className={styles.imageSection}>
           <img src="/img-1.jpg" alt="GlamStock Bag" className={styles.image} />
         </div>
-
         <div className={styles.formSection}>
           <h1 className={styles.title}>¡Bienvenido!</h1>
           <p className={styles.subtitle}>Ingresa tus datos para continuar</p>
-
           {justRegistered && (
             <p className={styles.successMessage}>Cuenta creada con éxito. Inicia sesión para continuar.</p>
           )}
           {generalError && <ErrorMessage message={generalError} />}
-
           <form onSubmit={handleSubmit}>
-            <FormField
-              label="Email:"
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              error={errors.email}
-            />
+            <FormField label="Email:" id="email" type="email" value={formData.email} onChange={handleChange} error={errors.email} />
             <FormField
               label="Contraseña:"
               id="password"
@@ -124,7 +101,6 @@ export default function LoginPage() {
             <button type="submit" disabled={isLoading} className={styles.submitButton}>
               {isLoading ? 'Ingresando...' : 'Ingresar'}
             </button>
-
             <Link href="/login/register" className={styles.new}>
               ¿No tienes cuenta? <span className={styles.newregister}>Regístrate</span>
             </Link>
@@ -132,5 +108,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
