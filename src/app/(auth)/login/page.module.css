@@ -59,6 +59,21 @@
   text-align: center;
 }
 
+.new {
+  color: #605E5F;
+  margin-top: 1.5rem;
+  text-align: center;
+  display: block;
+  font-size: 0.9rem;
+}
+
+.newregister {
+  color: #850E35;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+
 .submitButton {
   width: 100%;
   background-color: #850E35;

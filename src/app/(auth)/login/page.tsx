@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FormField from '@/components/forms/FormField';
+import { User, Mail, Eye, EyeOff } from 'lucide-react';
 import ErrorMessage from '@/components/forms/ErrorMessage';
 import styles from './page.module.css';
 
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [generalError, setGeneralError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -103,14 +105,23 @@ export default function LoginPage() {
             <FormField
               label="Contraseña:"
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
+              icon={
+                <button type="button" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              }
             />
             <button type="submit" disabled={isLoading} className={styles.submitButton}>
               {isLoading ? 'Ingresando...' : 'Ingresar'}
             </button>
+
+            <a href="/login/register" className={styles.new}>
+            ¿No tienes cuenta? <span className={styles.newregister}>Regístrate</span>
+          </a>
           </form>
         </div>
       </div>

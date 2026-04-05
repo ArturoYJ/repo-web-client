@@ -94,7 +94,7 @@ export default function NuevoProductoForm({
           className={styles.input}
           type="text"
           name="sku"
-          placeholder="SKU (opcional)"
+          placeholder="Identificador (opcional)"
           value={formData.sku}
           onChange={onChange}
         />

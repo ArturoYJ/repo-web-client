@@ -84,7 +84,7 @@ export default function InfoVarianteModal({ open, varianteId, inventarioId, onCl
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <p className={styles.label}>SKU Variante</p>
+              <p className={styles.label}>Identificador Variante</p>
               <p className={styles.value}>{data.sku}</p>
             </div>
             <div className={styles.field}>

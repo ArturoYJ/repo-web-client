@@ -34,7 +34,7 @@ export default function InfoProductoModal({ open, productoId, onClose }: InfoPro
               <p className={styles.value}>{producto.nombre}</p>
             </div>
             <div className={styles.field}>
-              <p className={styles.label}>SKU</p>
+              <p className={styles.label}>Identificador</p>
               <p className={styles.value}>{producto.sku || '—'}</p>
             </div>
           </div>

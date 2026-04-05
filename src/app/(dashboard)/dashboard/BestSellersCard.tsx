@@ -20,7 +20,7 @@ export default function BestSellersCard({ productos }: BestSellersCardProps) {
             <span className={styles.rankNumber}>{idx + 1}</span>
             <div className={styles.itemDetails}>
               <div className={styles.itemName}>{prod.nombre_producto}</div>
-              <div className={styles.itemMeta}>SKU: {prod.sku_variante}</div>
+              <div className={styles.itemMeta}>Identificador: {prod.sku_variante}</div>
             </div>
             <div className={styles.itemStats}>
               <div className={styles.statPrimary}>{prod.total_unidades_vendidas} unidades</div>
