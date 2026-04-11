@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Dialog from '@/components/ui/Dialog';
 import Button from '@/components/ui/Button';
-import styles from './CreateSucursal.module.css';
+import styles from './EditSucursal.module.css';
 
 interface EditSucursalModalProps {
   open: boolean;
