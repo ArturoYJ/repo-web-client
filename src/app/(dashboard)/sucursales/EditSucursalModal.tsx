@@ -44,7 +44,7 @@ export default function EditSucursalModal({
     setSubmitting(true);
     try {
       const res = await fetch(`/api/v1/sucursales/${sucursalId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ nombre_lugar: nombre.trim(), ubicacion: ubicacion.trim() || null }),

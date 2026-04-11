@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Sucursal, InventarioItem, VentaFormData, VentaFormErrors, MotivoTransaccion } from '@/types/ventas-view.types';
 
 const FORM_INITIAL: VentaFormData = {
@@ -13,9 +13,8 @@ interface UseVentaFormResult {
   formData: VentaFormData;
   formErrors: VentaFormErrors;
   submitting: boolean;
-  sucursales: Sucursal[];
-  loadingSucursales: boolean;
   motivos: MotivoTransaccion[];
+  allInventario: InventarioItem[];
   filteredInventario: InventarioItem[];
   loadingInventario: boolean;
   searchProducto: string;
@@ -44,12 +43,9 @@ export function useVentaForm(
   const [formData, setFormData] = useState<VentaFormData>(FORM_INITIAL);
   const [formErrors, setFormErrors] = useState<VentaFormErrors>({});
   const [submitting, setSubmitting] = useState(false);
-
-  const [sucursales, setSucursales] = useState<Sucursal[]>([]);
-  const [loadingSucursales, setLoadingSucursales] = useState(false);
   const [motivos, setMotivos] = useState<MotivoTransaccion[]>([]);
 
-  const [inventario, setInventario] = useState<InventarioItem[]>([]);
+  const [allInventario, setAllInventario] = useState<InventarioItem[]>([]);
   const [filteredInventario, setFilteredInventario] = useState<InventarioItem[]>([]);
   const [loadingInventario, setLoadingInventario] = useState(false);
   const [searchProducto, setSearchProducto] = useState('');
@@ -57,38 +53,38 @@ export function useVentaForm(
   const [selectedProduct, setSelectedProduct] = useState<InventarioItem | null>(null);
   const [total, setTotal] = useState<number | null>(null);
 
-  const fetchInventario = useCallback(async (sucursalId: string, autoSelectVarianteId?: number, searchTerm?: string) => {
-    if (!sucursalId) { setInventario([]); setFilteredInventario([]); return; }
+  const initializedRef = useRef(false);
+
+  const fetchAllInventario = useCallback(async (sucursales: Sucursal[], preselectVarianteId?: number) => {
     setLoadingInventario(true);
     try {
-      const r = await fetch(`/api/v1/inventario?sucursal_id=${sucursalId}`, { credentials: 'include' });
-      const d = r.ok ? await r.json() : { data: [] };
-      const items: InventarioItem[] = (d.data || []).filter((item: InventarioItem) => item.stock_actual > 0);
-      setInventario(items);
+      const results = await Promise.all(
+        sucursales.map(async (s) => {
+          const r = await fetch(`/api/v1/inventario?sucursal_id=${s.id_sucursal}`, { credentials: 'include' });
+          const d = r.ok ? await r.json() : { data: [] };
+          return (d.data || [])
+            .filter((item: InventarioItem) => item.stock_actual > 0)
+            .map((item: InventarioItem) => ({ ...item, id_sucursal: s.id_sucursal, nombre_sucursal: s.nombre_lugar }));
+        })
+      );
+      const flat: InventarioItem[] = results.flat();
+      setAllInventario(flat);
+      setFilteredInventario(flat);
 
-      if (searchTerm) {
-        const lower = searchTerm.toLowerCase();
-        setFilteredInventario(items.filter(item =>
-          item.nombre_producto.toLowerCase().includes(lower) ||
-          item.sku_producto.toLowerCase().includes(lower)
-        ));
-      } else {
-        setFilteredInventario(items);
-      }
-
-      if (autoSelectVarianteId) {
-        const match = items.find(i => i.id_variante === autoSelectVarianteId);
+      if (preselectVarianteId) {
+        const match = flat.find(i => i.id_variante === preselectVarianteId && (!options?.preselectedSucursalId || i.id_sucursal === options.preselectedSucursalId));
         if (match) {
           setSelectedProduct(match);
           setFormData(prev => ({
             ...prev,
             id_variante: String(match.id_variante),
+            sucursal_id: String(match.id_sucursal),
             precio_venta_final: String(match.precio_venta),
           }));
         }
       }
     } catch {
-      setInventario([]);
+      setAllInventario([]);
       setFilteredInventario([]);
     } finally {
       setLoadingInventario(false);
@@ -96,8 +92,9 @@ export function useVentaForm(
   }, []);
 
   useEffect(() => {
-    if (!open) return;
-    setLoadingSucursales(true);
+    if (!open) { initializedRef.current = false; return; }
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
     if (options?.initialSearchTerm) {
       setSearchProducto(options.initialSearchTerm);
@@ -106,37 +103,30 @@ export function useVentaForm(
     Promise.all([
       fetch(`/api/v1/inventario/sucursales`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : { data: [] })
-        .then(d => {
-          const lista: Sucursal[] = d.data || [];
-          setSucursales(lista);
-          if (options?.preselectedSucursalId) {
-            const sid = String(options.preselectedSucursalId);
-            setFormData(prev => ({ ...prev, sucursal_id: sid }));
-            fetchInventario(sid, options.preselectedVarianteId, options.initialSearchTerm);
-          }
-        })
-        .catch(() => setSucursales([])),
+        .then(d => d.data as Sucursal[] || [])
+        .catch(() => [] as Sucursal[]),
       fetch(`/api/v1/motivos`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : { data: [] })
-        .then(d => {
-          const lista: MotivoTransaccion[] = d.data || [];
-          setMotivos(lista);
-          if (lista.length > 0) {
-            setFormData(prev => ({ ...prev, id_motivo: String(lista[0].id_motivo) }));
-          }
-        })
-        .catch(() => setMotivos([])),
-    ]).finally(() => setLoadingSucursales(false));
+        .then(d => d.data as MotivoTransaccion[] || [])
+        .catch(() => [] as MotivoTransaccion[]),
+    ]).then(([sucursales, listaMotivos]) => {
+      setMotivos(listaMotivos);
+      if (listaMotivos.length > 0) {
+        setFormData(prev => ({ ...prev, id_motivo: String(listaMotivos[0].id_motivo) }));
+      }
+      fetchAllInventario(sucursales, options?.preselectedVarianteId);
+    });
   }, [open]);
 
   useEffect(() => {
-    if (!searchProducto.trim()) { setFilteredInventario(inventario); return; }
-    const lower = searchProducto.toLowerCase();
-    setFilteredInventario(inventario.filter(item =>
-      item.nombre_producto.toLowerCase().includes(lower) ||
-      item.sku_producto.toLowerCase().includes(lower)
+    const term = searchProducto.trim().toLowerCase();
+    if (!term) { setFilteredInventario(allInventario); return; }
+    setFilteredInventario(allInventario.filter(item =>
+      item.nombre_producto.toLowerCase().includes(term) ||
+      item.sku_producto.toLowerCase().includes(term) ||
+      (item.modelo || '').toLowerCase().includes(term)
     ));
-  }, [searchProducto, inventario]);
+  }, [searchProducto, allInventario]);
 
   useEffect(() => {
     const qty = Number(formData.cantidad);
@@ -147,15 +137,6 @@ export function useVentaForm(
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormErrors(prev => ({ ...prev, [name]: undefined }));
-
-    if (name === 'sucursal_id') {
-      setFormData(prev => ({ ...prev, sucursal_id: value, id_variante: '', cantidad: '', precio_venta_final: '' }));
-      setSelectedProduct(null);
-      setSearchProducto('');
-      fetchInventario(value);
-      return;
-    }
-
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -164,6 +145,7 @@ export function useVentaForm(
     setFormData(prev => ({
       ...prev,
       id_variante: String(item.id_variante),
+      sucursal_id: String(item.id_sucursal),
       precio_venta_final: String(item.precio_venta),
     }));
     setFormErrors(prev => ({ ...prev, id_variante: undefined }));
@@ -171,7 +153,6 @@ export function useVentaForm(
 
   const validate = (): boolean => {
     const errors: VentaFormErrors = {};
-    if (!formData.sucursal_id) errors.sucursal_id = 'Selecciona una sucursal';
     if (!formData.id_variante) errors.id_variante = 'Selecciona un producto';
     if (!formData.cantidad || Number(formData.cantidad) <= 0) errors.cantidad = 'Ingresa una cantidad válida';
     if (!formData.precio_venta_final || Number(formData.precio_venta_final) < 0) errors.precio_venta_final = 'Ingresa un precio válido';
@@ -179,7 +160,7 @@ export function useVentaForm(
       errors.cantidad = `Stock insuficiente. Disponible: ${selectedProduct.stock_actual}`;
     }
     if (selectedProduct && Number(formData.precio_venta_final) < selectedProduct.precio_adquisicion) {
-      errors.precio_venta_final = `El precio no puede ser menor al costo de adquisición ($${selectedProduct.precio_adquisicion})`;
+      errors.precio_venta_final = `El precio no puede ser menor al costo ($${selectedProduct.precio_adquisicion})`;
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -190,7 +171,7 @@ export function useVentaForm(
     setFormData({ ...FORM_INITIAL, id_motivo: primerMotivo });
     setFormErrors({});
     setSelectedProduct(null);
-    setInventario([]);
+    setAllInventario([]);
     setFilteredInventario([]);
     setSearchProducto('');
     setTotal(null);
@@ -236,9 +217,8 @@ export function useVentaForm(
     formData,
     formErrors,
     submitting,
-    sucursales,
-    loadingSucursales,
     motivos,
+    allInventario,
     filteredInventario,
     loadingInventario,
     searchProducto,

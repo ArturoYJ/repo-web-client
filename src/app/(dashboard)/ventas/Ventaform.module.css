@@ -175,3 +175,31 @@
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
+.productSucursal {
+  font-size: 0.7rem;
+  color: #850E35;
+  font-weight: 600;
+  margin: 0.1rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.selectedInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #fdf2f8;
+  border: 1px solid #f0abce;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+}
+
+.selectedLabel {
+  color: #6b7280;
+}
+
+.selectedValue {
+  color: #850E35;
+  font-weight: 600;
+}

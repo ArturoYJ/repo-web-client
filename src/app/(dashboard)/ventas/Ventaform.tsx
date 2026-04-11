@@ -9,7 +9,6 @@ import styles from './Ventaform.module.css';
 export default function VentaForm({ open, onClose, onSuccess, showToast, preselectedSucursalId, preselectedVarianteId, initialSearchTerm }: VentaFormProps) {
   const {
     formData, formErrors, submitting,
-    sucursales, loadingSucursales,
     motivos,
     filteredInventario, loadingInventario,
     searchProducto, selectedProduct, total,
@@ -26,75 +25,65 @@ export default function VentaForm({ open, onClose, onSuccess, showToast, presele
       <form onSubmit={handleSubmit} className={styles.form}>
 
         <div className={styles.field}>
-          <select
-            aria-label="Sucursal"
-            className={`${styles.input} ${styles.select} ${formErrors.sucursal_id ? styles.inputError : ''}`}
-            name="sucursal_id"
-            value={formData.sucursal_id}
-            onChange={handleChange}
-            disabled={loadingSucursales}
-          >
-            <option value="">{loadingSucursales ? 'Cargando sucursales...' : 'Seleccionar sucursal *'}</option>
-            {sucursales.map(s => (
-              <option key={s.id_sucursal} value={s.id_sucursal}>{s.nombre_lugar}</option>
-            ))}
-          </select>
-          {formErrors.sucursal_id && <p className={styles.error}>{formErrors.sucursal_id}</p>}
+          <input
+            className={styles.input}
+            type="text"
+            placeholder="Buscar producto por nombre, SKU o modelo..."
+            value={searchProducto}
+            onChange={e => setSearchProducto(e.target.value)}
+            autoFocus
+          />
         </div>
 
-        {formData.sucursal_id && (
-          <div className={styles.field}>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="Buscar producto por nombre o SKU..."
-              value={searchProducto}
-              onChange={e => setSearchProducto(e.target.value)}
-            />
-          </div>
-        )}
-
-        {formData.sucursal_id && (
-          <div className={styles.field}>
-            <div className={styles.productList}>
-              {loadingInventario ? (
-                <p className={styles.productEmpty}>Cargando productos...</p>
-              ) : filteredInventario.length === 0 ? (
-                <p className={styles.productEmpty}>Sin productos disponibles</p>
-              ) : (
-                filteredInventario.map(item => {
-                  const isSelected = selectedProduct?.id_variante === item.id_variante;
-                  const stockBajo = item.stock_actual <= 3;
-                  return (
-                    <div
-                      key={item.id_variante}
-                      className={`${styles.productItem} ${isSelected ? styles.productItemSelected : ''}`}
-                      onClick={() => handleSelectProduct(item)}
-                    >
-                      <div>
-                        <p className={`${styles.productName} ${isSelected ? styles.productNameSelected : ''}`}>
-                          {item.nombre_producto}
-                        </p>
-                        <p className={styles.productMeta}>
-                          {item.sku_producto}
-                          {item.modelo ? ` · ${item.modelo}` : ''}
-                          {item.color ? ` · ${item.color}` : ''}
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <p className={stockBajo ? styles.productStockLow : styles.productStockOk}>
-                          Stock: {item.stock_actual}
-                        </p>
-                        <p className={styles.productPrice}>
-                          ${Number(item.precio_venta).toLocaleString()}
-                        </p>
-                      </div>
+        <div className={styles.field}>
+          <div className={styles.productList}>
+            {loadingInventario ? (
+              <p className={styles.productEmpty}>Cargando inventario...</p>
+            ) : filteredInventario.length === 0 ? (
+              <p className={styles.productEmpty}>
+                {searchProducto.trim() ? 'Sin resultados para esa búsqueda' : 'Sin productos con stock disponible'}
+              </p>
+            ) : (
+              filteredInventario.map(item => {
+                const isSelected = selectedProduct?.id_variante === item.id_variante && selectedProduct?.id_sucursal === item.id_sucursal;
+                const stockBajo = item.stock_actual <= 3;
+                return (
+                  <div
+                    key={`${item.id_variante}-${item.id_sucursal}`}
+                    className={`${styles.productItem} ${isSelected ? styles.productItemSelected : ''}`}
+                    onClick={() => handleSelectProduct(item)}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className={`${styles.productName} ${isSelected ? styles.productNameSelected : ''}`}>
+                        {item.nombre_producto}
+                      </p>
+                      <p className={styles.productMeta}>
+                        {item.sku_producto}
+                        {item.modelo ? ` · ${item.modelo}` : ''}
+                        {item.color ? ` · ${item.color}` : ''}
+                      </p>
+                      <p className={styles.productSucursal}>{item.nombre_sucursal}</p>
                     </div>
-                  );
-                })
-              )}
-            </div>
-            {formErrors.id_variante && <p className={styles.error}>{formErrors.id_variante}</p>}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p className={stockBajo ? styles.productStockLow : styles.productStockOk}>
+                        Stock: {item.stock_actual}
+                      </p>
+                      <p className={styles.productPrice}>
+                        ${Number(item.precio_venta).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          {formErrors.id_variante && <p className={styles.error}>{formErrors.id_variante}</p>}
+        </div>
+
+        {selectedProduct && (
+          <div className={styles.selectedInfo}>
+            <span className={styles.selectedLabel}>Vendiendo desde:</span>
+            <span className={styles.selectedValue}>{selectedProduct.nombre_sucursal}</span>
           </div>
         )}
 

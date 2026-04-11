@@ -24,6 +24,8 @@ export interface Sucursal {
 export interface InventarioItem {
   id_inventario: number;
   id_variante: number;
+  id_sucursal: number;
+  nombre_sucursal: string;
   sku_producto: string;
   nombre_producto: string;
   stock_actual: number;
