@@ -16,6 +16,7 @@ import InfoProductoModal from './Infoproducto';
 import AddVarianteModal from './AddVarianteModal';
 import SelectVarianteModal from './SelectVarianteModal';
 import EditVarianteModal from './EditVarianteModal';
+import VentaForm from '../ventas/Ventaform';
 import type { Producto, ProductoFila } from '@/types/inventario-view.types';
 import styles from './page.module.css';
 import formStyles from './form.module.css';
@@ -65,6 +66,9 @@ export default function InventarioPage() {
   const [showAddVarianteModal, setShowAddVarianteModal] = useState(false);
   const [addVarianteProductId, setAddVarianteProductId] = useState<number | null>(null);
   const [addVarianteProductoNombre, setAddVarianteProductoNombre] = useState('');
+
+  const [showVentaModal, setShowVentaModal] = useState(false);
+  const [ventaSearchTerm, setVentaSearchTerm] = useState('');
 
   const [showSelectVarianteModal, setShowSelectVarianteModal] = useState(false);
   const [selectVarianteProductId, setSelectVarianteProductId] = useState<number | null>(null);
@@ -321,6 +325,7 @@ export default function InventarioPage() {
               <button className={styles.dropdownItem} onClick={() => { setSelectVarianteProductId(row.id); setShowSelectVarianteModal(true); setOpenMenuId(null); }}>Editar variantes</button>
               <button className={styles.dropdownItem} onClick={() => handleOpenEdit(row.id)}>Editar producto</button>
               <button className={styles.dropdownItem} onClick={() => handleOpenInfo(row.id)}>Mas info general</button>
+              <button className={styles.dropdownItem} onClick={() => { setVentaSearchTerm(row.nombre); setShowVentaModal(true); setOpenMenuId(null); }}>Generar venta</button>
             </div>
           )}
         </div>
@@ -457,6 +462,14 @@ export default function InventarioPage() {
           onCancel={handleCloseModal}
         />
       </Dialog>
+
+      <VentaForm
+        open={showVentaModal}
+        onClose={() => { setShowVentaModal(false); setVentaSearchTerm(''); }}
+        onSuccess={fetchProductos}
+        showToast={showToast}
+        initialSearchTerm={ventaSearchTerm}
+      />
     </div>
   );
 }
