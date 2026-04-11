@@ -53,6 +53,9 @@ export interface VentaFormProps {
   onClose: () => void;
   onSuccess: () => void;
   showToast: (msg: string, type: 'success' | 'error') => void;
+  preselectedSucursalId?: number;
+  preselectedVarianteId?: number;
+  initialSearchTerm?: string;
 }
 
 export interface MotivoTransaccion {

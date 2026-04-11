@@ -132,10 +132,30 @@
   position: relative;
 }
 
-.deleteBtn {
+.cardActions {
   position: absolute;
   top: 1rem;
   right: 1rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #d1d5db;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.editBtn:hover {
+  color: #7c3aed;
+}
+
+.deleteBtn {
   background: none;
   border: none;
   cursor: pointer;

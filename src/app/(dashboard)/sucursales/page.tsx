@@ -9,6 +9,8 @@ import EditVarianteModal from '../inventario/EditVarianteModal';
 import InfoVarianteModal from '../inventario/InfoVarianteModal';
 import AjusteStockModal from '../inventario/AjusteStockModal';
 import CreateSucursalModal from './CreateSucursal';
+import EditSucursalModal from './EditSucursalModal';
+import VentaForm from '../ventas/Ventaform';
 import type { Sucursal, SucursalConInventario, VarianteProducto, Producto } from '@/types/sucursales-view.types';
 import type { InventarioItem } from '@/types/inventario.types';
 import styles from './page.module.css';
@@ -26,6 +28,13 @@ export default function SucursalesPage() {
   const [deleteSucursalTarget, setDeleteSucursalTarget] = useState<{ id: number; nombre: string } | null>(null);
   const [deletingSucursal, setDeletingSucursal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const [showEditSucursalModal, setShowEditSucursalModal] = useState(false);
+  const [editSucursalTarget, setEditSucursalTarget] = useState<{ id: number; nombre: string; ubicacion: string } | null>(null);
+
+  const [showVentaModal, setShowVentaModal] = useState(false);
+  const [ventaPreselectedVariante, setVentaPreselectedVariante] = useState<number | undefined>(undefined);
+  const [ventaPreselectedSucursal, setVentaPreselectedSucursal] = useState<number | undefined>(undefined);
 
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
@@ -133,6 +142,7 @@ export default function SucursalesPage() {
       setDeleting(false);
     }
   };
+
   const handleDeleteSucursal = async () => {
     if (!deleteSucursalTarget) return;
     setDeletingSucursal(true);
@@ -156,6 +166,18 @@ export default function SucursalesPage() {
   const handleOpenEditVariante = (idV: number, idI: number) => { setEditVarianteId(idV); setShowEditVarianteModal(true); };
   const handleOpenInfoVariante = (idV: number, idI: number) => { setInfoVarianteId(idV); setInfoInventarioId(idI); setShowInfoVarianteModal(true); };
   const handleOpenAjusteStock = (idV: number, idS: number) => { setAjusteVarianteId(idV); setAjusteSucursalId(idS); setShowAjusteStockModal(true); };
+  const handleOpenVenta = (idV: number, idS: number) => {
+    setVentaPreselectedVariante(idV);
+    setVentaPreselectedSucursal(idS);
+    setShowVentaModal(true);
+  };
+
+  const handleOpenEditSucursal = (s: Sucursal) => {
+    setEditSucursalTarget({ id: s.id_sucursal, nombre: s.nombre_lugar, ubicacion: s.ubicacion || '' });
+    setShowEditSucursalModal(true);
+  };
+
+  const selectedSucursal = sucursales.find(s => s.id_sucursal === selectedSucursalId);
 
   return (
     <div>
@@ -194,26 +216,23 @@ export default function SucursalesPage() {
       ) : filtered.length === 0 ? (
         <div className={styles.emptyPage}>Sin sucursales registradas</div>
       ) : selectedSucursalId !== null ? (
-        (() => {
-          const selected = sucursales.find(s => s.id_sucursal === selectedSucursalId);
-          if (!selected) return null;
-          return (
-            <SucursalDetail
-              nombre={selected.nombre_lugar}
-              ubicacion={selected.ubicacion}
-              inventario={selected.inventario}
-              loading={selected.loadingInventario}
-              onBack={() => setSelectedSucursalId(null)}
-              onDelete={(idVariante) => {
-                const idProducto = varianteToProductoMap.get(idVariante);
-                if (idProducto) setDeleteTarget(idProducto);
-              }}
-              onEdit={handleOpenEditVariante}
-              onInfo={handleOpenInfoVariante}
-              onAjustar={handleOpenAjusteStock}
-            />
-          );
-        })()
+        selectedSucursal ? (
+          <SucursalDetail
+            nombre={selectedSucursal.nombre_lugar}
+            ubicacion={selectedSucursal.ubicacion}
+            inventario={selectedSucursal.inventario}
+            loading={selectedSucursal.loadingInventario}
+            onBack={() => setSelectedSucursalId(null)}
+            onDelete={(idVariante) => {
+              const idProducto = varianteToProductoMap.get(idVariante);
+              if (idProducto) setDeleteTarget(idProducto);
+            }}
+            onEdit={handleOpenEditVariante}
+            onInfo={handleOpenInfoVariante}
+            onAjustar={handleOpenAjusteStock}
+            onVenta={handleOpenVenta}
+          />
+        ) : null
       ) : (
         <div className={styles.grid}>
           {filtered.map((s) => (
@@ -226,18 +245,30 @@ export default function SucursalesPage() {
                 loading={s.loadingInventario}
                 onViewDetails={setSelectedSucursalId}
               />
-              <button
-                onClick={() => setDeleteSucursalTarget({ id: s.id_sucursal, nombre: s.nombre_lugar })}
-                title="Eliminar sucursal"
-                className={styles.deleteBtn}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                  <path d="M10 11v6M14 11v6" />
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                </svg>
-              </button>
+              <div className={styles.cardActions}>
+                <button
+                  onClick={() => handleOpenEditSucursal(s)}
+                  title="Editar sucursal"
+                  className={styles.editBtn}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setDeleteSucursalTarget({ id: s.id_sucursal, nombre: s.nombre_lugar })}
+                  title="Eliminar sucursal"
+                  className={styles.deleteBtn}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -282,6 +313,16 @@ export default function SucursalesPage() {
         showToast={showToast}
       />
 
+      <EditSucursalModal
+        open={showEditSucursalModal}
+        sucursalId={editSucursalTarget?.id ?? null}
+        initialNombre={editSucursalTarget?.nombre ?? ''}
+        initialUbicacion={editSucursalTarget?.ubicacion ?? ''}
+        onClose={() => { setShowEditSucursalModal(false); setEditSucursalTarget(null); }}
+        onSuccess={fetchAll}
+        showToast={showToast}
+      />
+
       <EditVarianteModal
         open={showEditVarianteModal}
         varianteId={editVarianteId}
@@ -304,6 +345,15 @@ export default function SucursalesPage() {
         onClose={() => setShowAjusteStockModal(false)}
         onSuccess={fetchAll}
         showToast={showToast}
+      />
+
+      <VentaForm
+        open={showVentaModal}
+        onClose={() => { setShowVentaModal(false); setVentaPreselectedVariante(undefined); setVentaPreselectedSucursal(undefined); }}
+        onSuccess={fetchAll}
+        showToast={showToast}
+        preselectedSucursalId={ventaPreselectedSucursal}
+        preselectedVarianteId={ventaPreselectedVariante}
       />
     </div>
   );

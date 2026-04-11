@@ -6,7 +6,7 @@ import { useVentaForm } from '@/hooks/useVentaForm';
 import type { VentaFormProps } from '@/types/ventas-view.types';
 import styles from './Ventaform.module.css';
 
-export default function VentaForm({ open, onClose, onSuccess, showToast }: VentaFormProps) {
+export default function VentaForm({ open, onClose, onSuccess, showToast, preselectedSucursalId, preselectedVarianteId, initialSearchTerm }: VentaFormProps) {
   const {
     formData, formErrors, submitting,
     sucursales, loadingSucursales,
@@ -15,7 +15,11 @@ export default function VentaForm({ open, onClose, onSuccess, showToast }: Venta
     searchProducto, selectedProduct, total,
     setSearchProducto, handleChange, handleSelectProduct,
     handleSubmit, handleClose,
-  } = useVentaForm(open, onClose, onSuccess, showToast);
+  } = useVentaForm(open, onClose, onSuccess, showToast, {
+    preselectedSucursalId,
+    preselectedVarianteId,
+    initialSearchTerm,
+  });
 
   return (
     <Dialog open={open} onClose={handleClose} title="Registrar venta">

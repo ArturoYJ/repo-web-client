@@ -28,11 +28,18 @@ interface UseVentaFormResult {
   handleClose: () => void;
 }
 
+export interface VentaFormOptions {
+  preselectedSucursalId?: number;
+  preselectedVarianteId?: number;
+  initialSearchTerm?: string;
+}
+
 export function useVentaForm(
   open: boolean,
   onClose: () => void,
   onSuccess: () => void,
   showToast: (msg: string, type: 'success' | 'error') => void,
+  options?: VentaFormOptions,
 ): UseVentaFormResult {
   const [formData, setFormData] = useState<VentaFormData>(FORM_INITIAL);
   const [formErrors, setFormErrors] = useState<VentaFormErrors>({});
@@ -50,13 +57,64 @@ export function useVentaForm(
   const [selectedProduct, setSelectedProduct] = useState<InventarioItem | null>(null);
   const [total, setTotal] = useState<number | null>(null);
 
+  const fetchInventario = useCallback(async (sucursalId: string, autoSelectVarianteId?: number, searchTerm?: string) => {
+    if (!sucursalId) { setInventario([]); setFilteredInventario([]); return; }
+    setLoadingInventario(true);
+    try {
+      const r = await fetch(`/api/v1/inventario?sucursal_id=${sucursalId}`, { credentials: 'include' });
+      const d = r.ok ? await r.json() : { data: [] };
+      const items: InventarioItem[] = (d.data || []).filter((item: InventarioItem) => item.stock_actual > 0);
+      setInventario(items);
+
+      if (searchTerm) {
+        const lower = searchTerm.toLowerCase();
+        setFilteredInventario(items.filter(item =>
+          item.nombre_producto.toLowerCase().includes(lower) ||
+          item.sku_producto.toLowerCase().includes(lower)
+        ));
+      } else {
+        setFilteredInventario(items);
+      }
+
+      if (autoSelectVarianteId) {
+        const match = items.find(i => i.id_variante === autoSelectVarianteId);
+        if (match) {
+          setSelectedProduct(match);
+          setFormData(prev => ({
+            ...prev,
+            id_variante: String(match.id_variante),
+            precio_venta_final: String(match.precio_venta),
+          }));
+        }
+      }
+    } catch {
+      setInventario([]);
+      setFilteredInventario([]);
+    } finally {
+      setLoadingInventario(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     setLoadingSucursales(true);
+
+    if (options?.initialSearchTerm) {
+      setSearchProducto(options.initialSearchTerm);
+    }
+
     Promise.all([
       fetch(`/api/v1/inventario/sucursales`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : { data: [] })
-        .then(d => setSucursales(d.data || []))
+        .then(d => {
+          const lista: Sucursal[] = d.data || [];
+          setSucursales(lista);
+          if (options?.preselectedSucursalId) {
+            const sid = String(options.preselectedSucursalId);
+            setFormData(prev => ({ ...prev, sucursal_id: sid }));
+            fetchInventario(sid, options.preselectedVarianteId, options.initialSearchTerm);
+          }
+        })
         .catch(() => setSucursales([])),
       fetch(`/api/v1/motivos`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : { data: [] })
@@ -70,23 +128,6 @@ export function useVentaForm(
         .catch(() => setMotivos([])),
     ]).finally(() => setLoadingSucursales(false));
   }, [open]);
-
-  const fetchInventario = useCallback(async (sucursalId: string) => {
-    if (!sucursalId) { setInventario([]); setFilteredInventario([]); return; }
-    setLoadingInventario(true);
-    try {
-      const r = await fetch(`/api/v1/inventario?sucursal_id=${sucursalId}`, { credentials: 'include' });
-      const d = r.ok ? await r.json() : { data: [] };
-      const items: InventarioItem[] = (d.data || []).filter((item: InventarioItem) => item.stock_actual > 0);
-      setInventario(items);
-      setFilteredInventario(items);
-    } catch {
-      setInventario([]);
-      setFilteredInventario([]);
-    } finally {
-      setLoadingInventario(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (!searchProducto.trim()) { setFilteredInventario(inventario); return; }
@@ -129,20 +170,20 @@ export function useVentaForm(
   };
 
   const validate = (): boolean => {
-  const errors: VentaFormErrors = {};
-  if (!formData.sucursal_id) errors.sucursal_id = 'Selecciona una sucursal';
-  if (!formData.id_variante) errors.id_variante = 'Selecciona un producto';
-  if (!formData.cantidad || Number(formData.cantidad) <= 0) errors.cantidad = 'Ingresa una cantidad válida';
-  if (!formData.precio_venta_final || Number(formData.precio_venta_final) < 0) errors.precio_venta_final = 'Ingresa un precio válido';
-  if (selectedProduct && Number(formData.cantidad) > selectedProduct.stock_actual) {
-    errors.cantidad = `Stock insuficiente. Disponible: ${selectedProduct.stock_actual}`;
-  }
-  if (selectedProduct && Number(formData.precio_venta_final) < selectedProduct.precio_adquisicion) {
-    errors.precio_venta_final = `El precio no puede ser menor al costo de adquisición ($${selectedProduct.precio_adquisicion})`;
-  }
-  setFormErrors(errors);
-  return Object.keys(errors).length === 0;
-};
+    const errors: VentaFormErrors = {};
+    if (!formData.sucursal_id) errors.sucursal_id = 'Selecciona una sucursal';
+    if (!formData.id_variante) errors.id_variante = 'Selecciona un producto';
+    if (!formData.cantidad || Number(formData.cantidad) <= 0) errors.cantidad = 'Ingresa una cantidad válida';
+    if (!formData.precio_venta_final || Number(formData.precio_venta_final) < 0) errors.precio_venta_final = 'Ingresa un precio válido';
+    if (selectedProduct && Number(formData.cantidad) > selectedProduct.stock_actual) {
+      errors.cantidad = `Stock insuficiente. Disponible: ${selectedProduct.stock_actual}`;
+    }
+    if (selectedProduct && Number(formData.precio_venta_final) < selectedProduct.precio_adquisicion) {
+      errors.precio_venta_final = `El precio no puede ser menor al costo de adquisición ($${selectedProduct.precio_adquisicion})`;
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const reset = () => {
     const primerMotivo = motivos.length > 0 ? String(motivos[0].id_motivo) : '';

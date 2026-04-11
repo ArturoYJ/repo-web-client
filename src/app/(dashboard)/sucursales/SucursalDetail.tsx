@@ -12,6 +12,7 @@ interface SucursalDetailProps {
   onEdit: (idVariante: number, idInventario: number) => void;
   onInfo: (idVariante: number, idInventario: number) => void;
   onAjustar: (idVariante: number, idSucursal: number) => void;
+  onVenta: (idVariante: number, idSucursal: number) => void;
 }
 
 type SortField = 'sku' | 'nombre' | 'stock' | 'precio_adquisicion' | 'precio_venta' | 'utilidad';
@@ -27,6 +28,7 @@ export default function SucursalDetail({
   onEdit,
   onInfo,
   onAjustar,
+  onVenta,
 }: SucursalDetailProps) {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
@@ -245,6 +247,15 @@ export default function SucursalDetail({
                                 style={{ color: '#0ea5e9' }}
                               >
                                 Ajustar stock
+                              </button>
+                              <button
+                                className={styles.dropdownItem}
+                                onClick={() => {
+                                  setOpenMenuId(null);
+                                  onVenta(item.id_variante, item.id_sucursal);
+                                }}
+                              >
+                                Generar venta
                               </button>
                             </div>
                           )}
